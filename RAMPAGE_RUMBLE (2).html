@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>RAMPAGE RUMBLE</title>
+<style>
+:root{--red:#f43b43;--gold:#ffc857;--panel:#171a27;--ink:#f7f7fb;--muted:#aeb4c5}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#090b12;color:var(--ink);font-family:system-ui,Arial;overscroll-behavior:none}
+body{padding:10px;touch-action:pan-y}.app{max-width:1100px;margin:auto}
+header{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.logo{font-weight:1000;font-size:clamp(22px,5vw,38px);letter-spacing:2px;color:var(--red);text-shadow:0 3px #641d28}
+.stats{display:flex;gap:8px;flex-wrap:wrap}.pill{background:#202536;border:1px solid #39415a;border-radius:999px;padding:7px 12px;font-weight:800}
+nav{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}
+button,select,input{font:inherit}button{border:1px solid #555e78;background:#293148;color:white;border-radius:11px;padding:10px 13px;font-weight:800;cursor:pointer}
+button.primary{background:linear-gradient(135deg,#ff4b50,#b51f39);border-color:#ff8585}
+button.gold{background:#73521c;border-color:#d6a746}button:disabled{opacity:.4;cursor:not-allowed}
+button:active{transform:translateY(1px)}.panel{background:linear-gradient(145deg,#1a2030,#111520);border:1px solid #333d56;border-radius:16px;padding:14px;margin:10px 0;box-shadow:0 8px 24px #0005}
+h2,h3{margin:4px 0 10px}p{color:#d6d9e4;line-height:1.45}.muted{color:var(--muted);font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:9px}
+.tile{background:#242c40;border:1px solid #3d4965;border-radius:12px;padding:11px;text-align:left}
+.tile strong{display:block;margin-bottom:5px}.tile small{color:#b9c1d4}
+.hidden{display:none!important}.row{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+#arena{position:relative;overflow:hidden;border-radius:16px;border:2px solid #555e78;background:#171a28;min-height:310px}
+canvas{display:block;width:100%;height:auto;aspect-ratio:16/7;touch-action:none}
+.hud{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px}
+.hpbox{background:#22283a;border-radius:10px;padding:8px}.hpbar{height:14px;background:#080a10;border-radius:99px;overflow:hidden;margin-top:5px}.hpfill{height:100%;width:100%;background:linear-gradient(90deg,#35d27c,#a7ee67);transition:width .15s}
+.enemyfill{background:linear-gradient(90deg,#ff4545,#ffad55)}.meter{height:8px;background:#090c13;border-radius:9px;overflow:hidden;margin-top:5px}.meter>div{height:100%;background:#f4435a;width:0%}
+#fightMessage{text-align:center;color:var(--gold);font-weight:900;min-height:25px;padding:5px}
+.controls{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px}
+.pad{display:grid;grid-template-columns:repeat(3,55px);gap:5px}.pad button{padding:13px 3px}
+.attacks{display:grid;grid-template-columns:repeat(3,minmax(70px,1fr));gap:6px;flex:1;max-width:490px}
+.attacks button{padding:13px 4px;font-size:13px}.danger{border-color:#d34a57}.tag{display:inline-block;background:#333c55;padding:3px 7px;border-radius:7px;font-size:11px;margin:2px}
+input{background:#0d111c;color:white;border:1px solid #58617b;border-radius:9px;padding:10px;max-width:100%}
+select{background:#0d111c;color:white;border:1px solid #58617b;border-radius:9px;padding:9px}
+footer{text-align:center;color:#8e96aa;font-size:12px;padding:18px}
+@media(max-width:600px){body{padding:6px}.panel{padding:10px}.pad{grid-template-columns:repeat(3,44px)}.pad button{padding:12px 1px}.attacks button{font-size:11px;padding:12px 2px}.controls{align-items:flex-start}canvas{aspect-ratio:16/9}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="logo">⚡ RAMPAGE RUMBLE</div><div class="stats"><span class="pill">ZEN <b id="zenTop">0</b></span><span class="pill">LEVEL <b id="levelTop">1</b>/50</span><span class="pill" id="nameTop">ROOKIE</span></div></header>
+<nav>
+<button data-page="home">HOME</button><button data-page="campaign">CAMPAIGN</button><button data-page="fighters">FIGHTERS</button><button data-page="gloves">GLOVES</button><button data-page="missions">MISSIONS</button><button data-page="mastery">MASTERY</button><button data-page="profile">PROFILE</button>
+</nav>
+<main id="home" class="page panel">
+<h2>Welcome to the arena</h2><p>Build your fighter, earn ZEN, defeat bosses and conquer all 50 levels.</p>
+<div class="grid">
+<div class="tile"><strong>🥊 Campaign</strong><small>50 levels • Boss every 5 levels • Bonus every 8 levels</small><p><button class="primary" onclick="showPage('campaign')">ENTER CAMPAIGN</button></p></div>
+<div class="tile"><strong>🧤 Equipment</strong><small>8 fighters and 10 glove tiers</small><p><button onclick="showPage('fighters')">CHOOSE FIGHTER</button></p></div>
+<div class="tile"><strong>📜 Daily missions</strong><small>Three rotating goals and ZEN rewards</small><p><button onclick="showPage('missions')">VIEW MISSIONS</button></p></div>
+<div class="tile"><strong>🏆 Mastery</strong><small>Progress separately with every fighter</small><p><button onclick="showPage('mastery')">VIEW MASTERY</button></p></div>
+</div>
+</main>
+<main id="campaign" class="page panel hidden">
+<div class="row"><h2>50-Level Campaign</h2><span class="tag">Boss: every 5 • Bonus: every 8</span></div>
+<p>Choose any unlocked level. Level 40 combines its boss and bonus challenge.</p><div id="levelGrid" class="grid"></div>
+</main>
+<main id="fighters" class="page panel hidden"><h2>Fighter Select</h2><p>Fighters have different base power and unique special moves. Unlock with ZEN and level requirements.</p><div id="fighterGrid" class="grid"></div></main>
+<main id="gloves" class="page panel hidden"><h2>Glove Inventory</h2><p>Gloves improve jab, punch and uppercut only. Kicks, knees and jump attacks are not boosted.</p><div id="gloveGrid" class="grid"></div></main>
+<main id="missions" class="page panel hidden"><h2>Daily Missions</h2><p class="muted">Missions reset every 24 hours. Progress is saved locally.</p><div id="missionGrid" class="grid"></div></main>
+<main id="mastery" class="page panel hidden"><h2>Fighter Mastery</h2><p>Earn mastery XP by fighting with each character. Rewards are cosmetic only.</p><div id="masteryGrid" class="grid"></div></main>
+<main id="profile" class="page panel hidden"><h2>Player Profile</h2><label>Player name (1–16 characters)<br><input id="nameInput" maxlength="16" placeholder="Enter your name"></label> <button class="primary" onclick="saveName()">SAVE NAME</button><p id="profileInfo"></p><p>Profile name is separate from the fighter you use.</p><button onclick="resetSave()">RESET LOCAL SAVE</button></main>
+<section id="fightPage" class="panel hidden">
+<div class="row"><h2 id="fightTitle">FIGHT ARENA</h2><span id="fightType" class="tag">NORMAL</span></div>
+<div class="hud">
+<div class="hpbox"><div class="row"><b id="playerLabel">PLAYER</b><b id="playerHPText">100/100</b></div><div class="hpbar"><div id="playerHP" class="hpfill"></div></div><small>Special energy</small><div class="meter"><div id="energyFill"></div></div></div>
+<div class="hpbox"><div class="row"><b id="enemyLabel">ENEMY</b><b id="enemyHPText">100/100</b></div><div class="hpbar"><div id="enemyHP" class="hpfill enemyfill"></div></div><small>Enemy gloves / level scaling</small></div>
+</div>
+<div id="arena"><canvas id="gameCanvas" width="960" height="420"></canvas></div>
+<div id="fightMessage">Move into range and fight!</div>
+<div class="row"><span>Combo: <b id="comboText">0</b></span><span>Rage: <b id="rageText">OFF</b></span><span id="coolText">Kick ready</span></div>
+<div class="controls">
+<div class="pad">
+<button aria-label="move left" onpointerdown="holdMove(-1,event)" onpointerup="stopMove()" onpointerleave="stopMove()" onpointercancel="stopMove()">◀</button>
+<button onclick="jump()">JUMP</button>
+<button aria-label="move right" onpointerdown="holdMove(1,event)" onpointerup="stopMove()" onpointerleave="stopMove()" onpointercancel="stopMove()">▶</button>
+</div>
+<div class="attacks">
+<button onclick="attack('fist')">👊 FIST</button><button onclick="uppercut()">X + FIST</button><button onclick="attack('kick')">🦵 KICK</button>
+<button onclick="knee()">JUMP + KICK</button><button onclick="jumpAttack()">JUMP HIT</button><button class="danger" id="specialBtn" onclick="special()">SPECIAL</button>
+<button class="gold" onclick="dodge()">DODGE</button><button onclick="block()">BLOCK</button><button onclick="pauseFight()">PAUSE</button>
+</div>
+</div>
+<p class="muted">Tip: joystick/buttons move you. Attacks only connect inside their range. A missed attack deals 0 damage.</p>
+</section>
+<section id="resultPage" class="panel hidden"><h2 id="resultTitle">VICTORY!</h2><p id="resultText"></p><div id="starText" style="font-size:30px;color:#ffc857"></div><button class="primary" onclick="nextAfterResult()">CONTINUE</button><button onclick="showPage('campaign')">CAMPAIGN MAP</button></section>
+<footer>RAMPAGE RUMBLE • Local browser save • Prototype build</footer>
+</div>
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const fighters=[
+{name:"Rookie",price:0,level:1,power:0,special:"Rookie Rush",emoji:"🥊",desc:"Balanced starter fighter."},
+{name:"Shadow",price:2000,level:5,power:1,special:"Shadow Dash",emoji:"🥷",desc:"Fast and evasive."},
+{name:"Kla",price:4000,level:8,power:2,special:"Power Smash",emoji:"👊",desc:"Heavy close-range fighter."},
+{name:"Ninja",price:6000,level:12,power:3,special:"Silent Strike",emoji:"🥷",desc:"Quick precision attacks."},
+{name:"Titan",price:9000,level:15,power:4,special:"Titan Impact",emoji:"🦾",desc:"Powerful heavyweight."},
+{name:"Phantom",price:13000,level:20,power:5,special:"Phantom Flurry",emoji:"👤",desc:"Mysterious combo fighter."},
+{name:"Saitama",price:35000,level:25,power:7,special:"Limit Break",emoji:"🦸",desc:"Secret high-tier fighter."},
+{name:"Goku",price:50000,level:30,power:8,special:"Energy Burst",emoji:"⚡",desc:"Secret high-tier fighter."}
+];
+const gloves=[
+["Classic","Common",0,0],["Leather","Common",500,1],["Iron","Uncommon",1200,2],["Flame","Rare",2500,3],["Thunder","Rare",4000,4],
+["Shadow","Epic",6500,5],["Golden","Epic",9000,6],["Dragon","Legendary",13000,8],["Phantom","Legendary",18000,10],["God Fist","Mythic",25000,12]
+].map(([name,rarity,price,bonus])=>({name,rarity,price,bonus}));
+const arenas=["Training Gym","Underground Arena","Street Fight Club","Industrial Arena","Neon Boxing Club","Desert Championship","Frozen Arena","Cyber Stadium","Royal Colosseum","Legendary Grand Arena"];
+const bossNames={5:"Iron Crusher",10:"Night Fang",15:"Steel Viper",20:"Thunder Lord",25:"Skull Titan",30:"Dread Monarch",35:"The Destroyer",40:"Phantom King",45:"Omega Fighter",50:"Arena Emperor — THE UNBEATEN"};
+const baseMissions=[{id:"wins",title:"Win 2 fights",goal:2,reward:150},{id:"hits",title:"Land 30 successful attacks",goal:30,reward:100},{id:"dodges",title:"Perform 3 perfect dodges",goal:3,reward:150}];
+const fresh=()=>({name:"Fighter",zen:0,level:1,selected:0,glove:0,unlockedF:[0],unlockedG:[0],maxHP:100,mastery:{},stats:{wins:0,hits:0,dodges:0},mission:{date:new Date().toDateString(),progress:[0,0,0],claimed:[false,false,false]},sound:true});
+let save;
+try{save={...fresh(),...JSON.parse(localStorage.getItem("rr_save")||"{}")}}catch(e){save=fresh()}
+function persist(){localStorage.setItem("rr_save",JSON.stringify(save));refreshTop()}
+function refreshTop(){$("zenTop").textContent=save.zen;$("levelTop").textContent=save.level;$("nameTop").textContent=save.name.toUpperCase()}
+function showPage(id){document.querySelectorAll(".page,#fightPage,#resultPage").forEach(x=>x.classList.add("hidden"));$(id).classList.remove("hidden");if(id==="campaign")renderLevels();if(id==="fighters")renderFighters();if(id==="gloves")renderGloves();if(id==="missions")renderMissions();if(id==="mastery")renderMastery();if(id==="profile")renderProfile()}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>showPage(b.dataset.page));
+function renderLevels(){let g=$("levelGrid");g.innerHTML="";for(let i=1;i<=50;i++){let boss=i%5===0,bonus=i%8===0,locked=i>save.level;let d=document.createElement("div");d.className="tile";d.innerHTML=`<strong>LEVEL ${i} ${boss?"👑":""}</strong><small>${arenas[Math.ceil(i/5)-1]}<br>${boss?"BOSS FIGHT":""}${boss&&bonus?" + ":""}${bonus?"BONUS FIGHT":""}${!boss&&!bonus?"Standard fight":""}</small><p><button ${locked?"disabled":""} class="primary">PLAY</button></p>`;d.querySelector("button").onclick=()=>startFight(i);g.append(d)}}
+function renderFighters(){let g=$("fighterGrid");g.innerHTML="";fighters.forEach((f,i)=>{let own=save.unlockedF.includes(i),req=save.level>=f.level&&save.zen>=f.price,d=document.createElement("div");d.className="tile";d.innerHTML=`<strong>${f.emoji} ${f.name}</strong><small>${f.desc}<br>Power +${f.power}<br>${f.special}<br>${own?"UNLOCKED":`Level ${f.level} • ${f.price} ZEN`}</small><p><button ${own?"":req?"":"disabled"}>${own?(save.selected===i?"SELECTED":"SELECT"): "UNLOCK"}</button></p>`;d.querySelector("button").onclick=()=>{if(own)save.selected=i;else if(req){save.zen-=f.price;save.unlockedF.push(i);save.selected=i}persist();renderFighters()};g.append(d)})}
+function renderGloves(){let g=$("gloveGrid");g.innerHTML="";gloves.forEach((f,i)=>{let own=save.unlockedG.includes(i),d=document.createElement("div");d.className="tile";d.innerHTML=`<strong>🧤 ${f.name}</strong><small>${f.rarity}<br>Jab / punch / uppercut bonus: +${f.bonus}<br>${own?"UNLOCKED":f.price+" ZEN"}</small><p><button ${own?"":save.zen>=f.price?"":"disabled"}>${own?(save.glove===i?"EQUIPPED":"EQUIP"):"BUY"}</button></p>`;d.querySelector("button").onclick=()=>{if(own)save.glove=i;else{save.zen-=f.price;save.unlockedG.push(i);save.glove=i}persist();renderGloves()};g.append(d)})}
+function dailyCheck(){let today=new Date().toDateString();if(save.mission.date!==today)save.mission={date:today,progress:[0,0,0],claimed:[false,false,false]}}
+function renderMissions(){dailyCheck();let g=$("missionGrid");g.innerHTML="";baseMissions.forEach((m,i)=>{let d=document.createElement("div");d.className="tile";let p=save.mission.progress[i];d.innerHTML=`<strong>${m.title}</strong><small>Progress: ${Math.min(p,m.goal)}/${m.goal}<br>Reward: ${m.reward} ZEN</small><p><button ${p<m.goal||save.mission.claimed[i]?"disabled":""}>${save.mission.claimed[i]?"CLAIMED":"CLAIM REWARD"}</button></p>`;d.querySelector("button").onclick=()=>{save.zen+=m.reward;save.mission.claimed[i]=true;persist();renderMissions()};g.append(d)})}
+function missionAdd(id,n=1){dailyCheck();let i=baseMissions.findIndex(x=>x.id===id);if(i>=0)save.mission.progress[i]+=n}
+function renderMastery(){let g=$("masteryGrid");g.innerHTML="";fighters.forEach((f,i)=>{let xp=save.mastery[i]||0,lv=Math.min(5,1+Math.floor(xp/5));let rewards=["","Victory pose","Visual effect","Title","Exclusive aura"];let d=document.createElement("div");d.className="tile";d.innerHTML=`<strong>${f.emoji} ${f.name}</strong><small>Mastery ${lv}/5 • XP ${xp}<br>Next cosmetic: ${lv<5?rewards[lv]:"All mastery cosmetics earned"}</small>`;g.append(d)})}
+function renderProfile(){$("nameInput").value=save.name;$("profileInfo").textContent=`Campaign level ${save.level} • ${save.zen} ZEN • ${save.stats.wins} wins • Selected fighter: ${fighters[save.selected].name}`}
+function saveName(){let n=$("nameInput").value.trim().slice(0,16);if(!n){alert("Enter a name first.");return}save.name=n;persist();renderProfile()}
+function resetSave(){if(confirm("Reset all local RAMPAGE RUMBLE progress?")){save=fresh();persist();showPage("home")}}
+let fight=null,moveTimer=null,anim=null,lastAI=0,paused=false,resultPending=false;
+const ctx=$("gameCanvas").getContext("2d");
+function startFight(lv){let boss=lv%5===0,bonus=lv%8===0,arena=arenas[Math.ceil(lv/5)-1],fi=fighters[save.selected],gl=gloves[save.glove],enemyMax=110+lv*13+(boss?130:0)+(bonus?55:0);fight={lv,boss,bonus,arena,player:{x:230,y:0,hp:save.maxHP,max:save.maxHP,energy:0,combo:0,lastHit:0,jab:0,blocking:false,rage:false},enemy:{x:730,y:0,hp:enemyMax,max:enemyMax,energy:0,combo:0,lastHit:0},kickReady:true,upperReady:true,kneeReady:true,enemyKickAt:0,damageEarned:0,bonusPending:bonus?250+lv*10:0,started:Date.now(),dodging:false,finished:false,phase:1,stars:0};paused=false;resultPending=false;
+$("fightTitle").textContent=boss?`BOSS ${lv}: ${bossNames[lv]}`:`LEVEL ${lv} — ${arena}`;$("fightType").textContent=(boss?"BOSS ":"")+(bonus?"BONUS EVENT":"NORMAL");$("playerLabel").textContent=save.name.toUpperCase()+" • "+fi.name;$("enemyLabel").textContent=boss?bossNames[lv]:"RIVAL "+lv;$("fightMessage").textContent=boss?"BOSS INTRO: "+bossNames[lv]:"FIGHT!";$("fightPage").classList.remove("hidden");document.querySelectorAll(".page,#resultPage").forEach(x=>x.classList.add("hidden"));updateHUD();drawArena();if(anim)cancelAnimationFrame(anim);lastAI=performance.now();anim=requestAnimationFrame(loop)}
+function range(){return Math.abs(fight.player.x-fight.enemy.x)}
+function gloveBonus(){return gloves[save.glove].bonus}
+function fighterPower(){return fighters[save.selected].power}
+function say(s){$("fightMessage").textContent=s}
+function updateHUD(){if(!fight)return;let p=fight.player,e=fight.enemy;$("playerHP").style.width=Math.max(0,p.hp/p.max*100)+"%";$("enemyHP").style.width=Math.max(0,e.hp/e.max*100)+"%";$("playerHPText").textContent=Math.ceil(p.hp)+"/"+p.max;$("enemyHPText").textContent=Math.ceil(e.hp)+"/"+e.max;$("energyFill").style.width=p.energy+"%";$("specialBtn").style.boxShadow=p.energy>=100?"0 0 14px #ff334f":"";$("comboText").textContent=p.combo;$("rageText").textContent=p.rage?"ACTIVE":"OFF";$("coolText").textContent=fight.kickReady?"Kick ready":"Kick cooling"}
+function drawArena(){if(!fight)return;let c=ctx,w=960,h=420;c.clearRect(0,0,w,h);let colors=[["#252f50","#151827"],["#373040","#17131e"],["#47302a","#19151a"],["#38414a","#151b20"],["#222d55","#14182a"],["#7b4d27","#2b1b17"],["#9bb8d2","#24374c"],["#182a58","#111528"],["#51402d","#201a1b"],["#3b2858","#151329"]][Math.ceil(fight.lv/5)-1];let gr=c.createLinearGradient(0,0,0,h);gr.addColorStop(0,colors[0]);gr.addColorStop(1,colors[1]);c.fillStyle=gr;c.fillRect(0,0,w,h);c.fillStyle="#ffffff12";for(let i=0;i<7;i++){c.fillRect(i*155+20,35,4,170)}c.fillStyle="#6c6470";c.fillRect(0,340,w,80);c.fillStyle="#c0a17b";c.fillRect(0,340,w,7);
+for(let i=0;i<16;i++){c.fillStyle=i%2?"#ffffff18":"#00000020";c.fillRect(i*65,180+(i%3)*20,28,90)}
+drawFighter(fight.player,true);drawFighter(fight.enemy,false)}
+function drawFighter(f,player){let x=f.x,y=340;ctx.save();ctx.translate(x,y);if(!player)ctx.scale(-1,1);if(f.rage||(!player&&f.hp/f.max<.25)){ctx.shadowColor="#ff263f";ctx.shadowBlur=25}ctx.fillStyle=player?"#48a8ff":"#ef5555";ctx.fillRect(-19,-100,38,58);ctx.fillStyle="#efc39f";ctx.beginPath();ctx.arc(0,-116,19,0,Math.PI*2);ctx.fill();ctx.fillStyle="#20202a";ctx.fillRect(-17,-139,34,9);ctx.fillStyle="#e8e8f0";ctx.fillRect(-29,-90,12,36);ctx.fillRect(17,-90,12,36);ctx.fillStyle="#303746";ctx.fillRect(-17,-43,13,43);ctx.fillRect(4,-43,13,43);ctx.fillStyle=player?"#d8eaff":"#ffe0e0";ctx.fillRect(12,-85,23,13);ctx.restore()}
+function loop(t){if(!fight||fight.finished)return;if(!paused){let dt=Math.min(.04,(t-lastAI)/1000);lastAI=t;enemyThink(t,dt);if(fight.player.combo&&Date.now()-fight.player.lastHit>1700)fight.player.combo=0;let p=fight.player;if(p.hp>0&&p.hp/p.max<.25&&!p.rage){p.rage=true;p.energy=Math.min(100,p.energy+15);say("RAGE MODE!");p.rageUntil=Date.now()+8000}if(p.rage&&Date.now()>p.rageUntil)p.rage=false;updateHUD();drawArena()}anim=requestAnimationFrame(loop)}
+function enemyThink(t,dt){let e=fight.enemy,p=fight.player;if(e.hp<=0||p.hp<=0)return;let d=e.x-p.x;if(Math.abs(d)>125)e.x-=Math.sign(d)*Math.min(90*dt,Math.abs(d)-110);else if(Math.random()<.006)e.x+=Math.sign(d)*25;
+if(t-fight.enemyKickAt>1500&&Math.abs(d)<145){fight.enemyKickAt=t;if(Math.random()<.55){let dmg=7+Math.floor(fight.lv/8);if(p.dodging){perfectDodge();return}if(p.blocking)dmg=Math.ceil(dmg*.25);p.hp=Math.max(0,p.hp-dmg);say("ENEMY ATTACK! -"+dmg+" HP");if(p.hp<=0)finishFight(false)}}
+}
+function movePlayer(dir){if(!fight||paused||fight.finished)return;fight.player.x=Math.max(70,Math.min(890,fight.player.x+dir*24));drawArena()}
+function holdMove(dir,e){e.preventDefault();stopMove();moveTimer=setInterval(()=>movePlayer(dir),70)}
+function stopMove(){if(moveTimer)clearInterval(moveTimer);moveTimer=null}
+function hitEnemy(type,dmg,reach,cool){if(!fight||paused||fight.finished)return;let p=fight.player,e=fight.enemy;if(Math.abs(p.x-e.x)>reach){p.combo=0;say("MISS — TOO FAR! 0 DAMAGE");updateHUD();return false}if(cool==="kick"&&!fight.kickReady){say("KICK COOLING DOWN");return false}if(cool==="upper"&&!fight.upperReady){say("UPPERCUT COOLING DOWN");return false}if(cool==="knee"&&!fight.kneeReady){say("KNEE STRIKE COOLING DOWN");return false}
+if(cool==="kick"){fight.kickReady=false;setTimeout(()=>{if(fight)fight.kickReady=true},3000)}if(cool==="upper"){fight.upperReady=false;setTimeout(()=>{if(fight)fight.upperReady=true},1000)}if(cool==="knee"){fight.kneeReady=false;setTimeout(()=>{if(fight)fight.kneeReady=true},1800)}
+let final=dmg+(["jab","punch","upper"].includes(type)?fighterPower()+gloveBonus():0);e.hp=Math.max(0,e.hp-final);fight.damageEarned+=final;save.zen+=final;p.energy=Math.min(100,p.energy+final*.7);p.combo++;p.lastHit=Date.now();save.stats.hits++;missionAdd("hits");if(p.combo===3)save.zen+=10;if(p.combo===5)save.zen+=25;if(p.combo===8)save.zen+=50;if(p.combo===12)save.zen+=100;if(p.combo>=12&&p.combo%4===0)save.zen+=100;save.mastery[save.selected]=(save.mastery[save.selected]||0)+1;
+if(e.hp<=e.max*.7&&fight.phase===1){fight.phase=2;say("BOSS PHASE 2!")}if(e.hp<=e.max*.35&&fight.phase===2){fight.phase=3;say("BOSS FINAL PHASE!")}
+if(e.hp<=0)finishFight(true);persist();updateHUD();return true}
+function attack(){if(!fight)return;let p=fight.player;p.jab++;let jab=p.jab%3!==0;hitEnemy(jab?"jab":"punch",jab?4:6,125)}
+function uppercut(){hitEnemy("upper",10,115,"upper")}
+function attackKick(){hitEnemy("kick",10,145,"kick")}
+function knee(){hitEnemy("knee",15,110,"knee")}
+function jump(){if(!fight)return;fight.player.y=1;say("JUMP!");setTimeout(()=>{if(fight)fight.player.y=0},450)}
+function jumpAttack(){if(!fight)return;if(Math.abs(fight.player.x-fight.enemy.x)>75){say("JUMP ATTACK NEEDS VERY CLOSE RANGE");return}hitEnemy("jump",14,75)}
+function special(){if(!fight)return;let p=fight.player;if(p.energy<100){say("SPECIAL ENERGY NOT FULL");return}let f=fighters[save.selected];if(Math.abs(p.x-fight.enemy.x)>210){say("SPECIAL TARGET OUT OF RANGE");return}p.energy=0;let dmg=28+fighterPower()*3;fight.enemy.hp=Math.max(0,fight.enemy.hp-dmg);fight.damageEarned+=dmg;save.zen+=dmg;say(f.special.toUpperCase()+"! "+dmg+" DAMAGE");if(fight.enemy.hp<=0)finishFight(true);persist();updateHUD()}
+function dodge(){if(!fight)return;let p=fight.player;p.dodging=true;movePlayer(fight.enemy.x>p.x?-1:1);setTimeout(()=>{if(fight)p.dodging=false},450);say("DODGE!");}
+function perfectDodge(){let p=fight.player;p.dodging=false;save.stats.dodges++;missionAdd("dodges");p.energy=Math.min(100,p.energy+20);say("✨ PERFECT DODGE! COUNTER WINDOW");p.counterUntil=Date.now()+900;persist();setTimeout(()=>{if(fight)updateHUD()},300)}
+function block(){if(!fight)return;fight.player.blocking=true;say("BLOCKING");setTimeout(()=>{if(fight)fight.player.blocking=false},650)}
+function pauseFight(){paused=!paused;say(paused?"PAUSED":"FIGHT!")}
+function finishFight(won){if(!fight||fight.finished)return;fight.finished=true;cancelAnimationFrame(anim);let p=fight.player;if(won){let pct=p.hp/p.max;let stars=pct>=.9?3:pct>=.5?2:1;fight.stars=stars;let base=fight.boss?500:100;let reward=base*stars;if(fight.bonus)reward+=fight.bonusPending;save.zen+=reward;save.stats.wins++;missionAdd("wins");save.level=Math.max(save.level,Math.min(50,fight.lv+1));if(fight.boss){save.maxHP=(save.maxHP||100)+15;save.maxHP=Math.min(300,save.maxHP)}save.maxHP=save.maxHP||100;save.maxHP+=fight.boss?15:0;save.maxHP=Math.min(300,save.maxHP);save.maxHP=Math.max(100,save.maxHP);save.maxHP= Math.max(save.maxHP,100);$("resultTitle").textContent="VICTORY!";$("starText").textContent="★".repeat(stars)+"☆".repeat(3-stars);$("resultText").textContent=`You won Level ${fight.lv}. Damage ZEN: ${fight.damageEarned}. Victory/bonus reward: ${reward} ZEN. ${fight.boss?"Boss defeated! Your max HP increases for the next fight.":""}`;}else{$("resultTitle").textContent="DEFEAT";$("starText").textContent="";$("resultText").textContent="Your earned attack ZEN is kept. The unclaimed bonus reward is lost. Try again and change your strategy."}persist();$("fightPage").classList.add("hidden");$("resultPage").classList.remove("hidden")}
+function nextAfterResult(){let next=fight?fight.lv+1:save.level;fight=null;showPage("campaign");if(next<=50)renderLevels()}
+function perfectCounter(){if(fight&&fight.player.counterUntil>Date.now())hitEnemy("counter",12,150)}
+function updateHUDsafe(){if(fight)updateHUD()}
+$("specialBtn").addEventListener("contextmenu",e=>e.preventDefault());
+function drawLoopInit(){refreshTop();renderLevels();renderFighters();renderGloves();renderMissions();renderMastery();renderProfile()}
+window.addEventListener("keydown",e=>{if(!fight)return;if(e.key==="ArrowLeft"||e.key==="a")movePlayer(-1);if(e.key==="ArrowRight"||e.key==="d")movePlayer(1);if(e.key===" "){e.preventDefault();jump()}if(e.key==="j")attack();if(e.key==="k")attackKick();if(e.key==="u")uppercut();if(e.key==="d")dodge()});
+$("gameCanvas").addEventListener("pointerdown",()=>{if(fight&&fight.player.counterUntil>Date.now())perfectCounter()});
+drawLoopInit();
+</script>
+</body>
+</html>
